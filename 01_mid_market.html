@@ -185,6 +185,8 @@ function ScoreBar({ score, passScore }) {
 }
 
 function App() {
+  const [apiKey, setApiKey] = useState(() => localStorage.getItem("anthropic_key") || "");
+  const [showKeyInput, setShowKeyInput] = useState(() => !localStorage.getItem("anthropic_key"));
   const [repName, setRepName] = useState("");
   const [onboardingDate, setOnboardingDate] = useState(new Date().toISOString().split("T")[0]);
   const [selectedDay, setSelectedDay] = useState(DAY_KEYS[0]);
@@ -230,6 +232,7 @@ function App() {
   }
 
   async function handleSubmit() {
+    if (!apiKey.trim()) { setStatus({ type: "error", msg: "Please enter your Anthropic API key first." }); return; }
     if (!repName.trim()) { setStatus({ type: "error", msg: "Please enter the rep's name." }); return; }
     setLoading(true);
     setStatus({ type: "loading", msg: "Updating Notion and sending Slack..." });
@@ -249,7 +252,7 @@ function App() {
 
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
+        method: "POST", headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true", "x-api-key": `${apiKey}` },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514", max_tokens: 2000,
           system: `You manage SDR onboarding records in Notion and Slack. Execute ALL of the following steps. Do not skip any step. Report exactly what happened.
@@ -325,6 +328,25 @@ Slack message: ${buildSlackMessage("[NOTION_PAGE_URL]")}` }],
 
   return (
     <div className="app">
+      {showKeyInput ? (
+        <div className="section-card" style={{marginBottom: "1rem"}}>
+          <div className="section-header">Anthropic API Key</div>
+          <p style={{fontSize: 12, color: "#888", marginBottom: 10}}>Enter once — saved to this browser. Never shared or stored elsewhere.</p>
+          <div style={{display: "flex", gap: 8}}>
+            <input type="password" placeholder="sk-ant-..." value={apiKey}
+              onChange={e => setApiKey(e.target.value)}
+              style={{flex:1,height:34,border:"1px solid rgba(0,0,0,0.15)",borderRadius:8,padding:"0 10px",fontSize:13,background:"#fff",fontFamily:"monospace"}} />
+            <button onClick={() => { localStorage.setItem("anthropic_key", apiKey); setShowKeyInput(false); }}
+              style={{height:34,padding:"0 16px",background:"#1C4482",color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{fontSize:12,color:"#aaa",marginBottom:"0.5rem",cursor:"pointer"}} onClick={() => setShowKeyInput(true)}>
+          🔑 API key saved · <span style={{textDecoration:"underline"}}>change</span>
+        </div>
+      )}
       <div className="flow-badge">Mid Market Onboarding</div>
       <div className="page-title">Daily recap</div>
       <div className="page-sub">Fill out at end of each onboarding day — syncs to Notion and Slack automatically.</div>
