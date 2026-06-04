@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDR Onboarding — APAC</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f7f5; color: #111; min-height: 100vh; padding: 2rem 1rem; }
+  .app { max-width: 720px; margin: 0 auto; }
+  .page-title { font-size: 22px; font-weight: 600; margin-bottom: 2px; color: #1C4482; }
+  .flow-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: #E6F1FB; color: #0C447C; margin-bottom: 4px; }
+  .page-sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .section-card { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .section-header { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .field-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .field-label { font-size: 13px; color: #666; min-width: 90px; }
+  select, input[type=date], input[type=number] { height: 34px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0 10px; font-size: 13px; background: #fff; color: #111; font-family: inherit; }
+  .day-select { flex: 1; }
+  .date-input { flex: 1; }
+  .day-badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; flex-shrink: 0; }
+  .badge-w1 { background: #E6F1FB; color: #0C447C; }
+  .badge-w2 { background: #EAF3DE; color: #27500A; }
+  .action-banner { background: #FFF8E6; border: 1px solid #F0D070; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #7A5000; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 8px; }
+  .progress-bar-track { height: 4px; background: rgba(0,0,0,0.08); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: #1C4482; border-radius: 2px; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: #888; margin-bottom: 10px; }
+  .session-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .session-item:last-child { border-bottom: none; }
+  .check-box { width: 20px; height: 20px; border: 1.5px solid rgba(0,0,0,0.2); border-radius: 5px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .check-box.checked { background: #1C4482; border-color: #1C4482; }
+  .check-icon { width: 11px; height: 11px; stroke: #fff; stroke-width: 2.5; fill: none; }
+  .session-info { flex: 1; min-width: 0; }
+  .session-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .session-name.done { text-decoration: line-through; color: #aaa; }
+  .session-meta { font-size: 11px; color: #aaa; margin-top: 1px; }
+  .leader-select { height: 28px; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 0 6px; font-size: 12px; background: #f7f7f5; color: #444; font-family: inherit; flex-shrink: 0; max-width: 140px; cursor: pointer; }
+  .leader-select.changed { background: #E6F1FB; color: #0C447C; border-color: #A8C8F0; font-weight: 600; }
+  .cert-block { background: #f7f7f5; border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+  .cert-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .cert-label { font-size: 12px; color: #666; min-width: 65px; }
+  .score-input { width: 72px; height: 30px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0 8px; font-size: 13px; background: #fff; flex-shrink: 0; }
+  .pass-pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+  .pass { background: #EAF3DE; color: #27500A; }
+  .fail { background: #FCEBEB; color: #791F1F; }
+  .neutral { background: #eee; color: #666; }
+  .score-bar-track { flex: 1; height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; overflow: hidden; min-width: 80px; }
+  .score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; }
+  .cert-notes-ta { width: 100%; height: 56px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 6px 10px; font-size: 12px; resize: vertical; background: #fff; font-family: inherit; margin-top: 6px; }
+  .notes-area { width: 100%; height: 80px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 10px; font-size: 13px; resize: vertical; background: #fff; font-family: inherit; }
+  .manager-toggle { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); cursor: pointer; user-select: none; }
+  .manager-toggle:last-child { border-bottom: none; }
+  .mgr-check { width: 20px; height: 20px; border: 1.5px solid rgba(0,0,0,0.2); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .mgr-check.on { background: #1C4482; border-color: #1C4482; }
+  .mgr-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .mgr-hint { font-size: 11px; color: #ccc; font-family: monospace; }
+  .submit-btn { width: 100%; height: 44px; background: #1C4482; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; transition: opacity 0.15s; }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status-msg { font-size: 13px; text-align: center; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: 500; }
+  .status-success { background: #EAF3DE; color: #27500A; }
+  .status-error { background: #FCEBEB; color: #791F1F; }
+  .status-loading { background: #E6F1FB; color: #0C447C; }
+  .notion-badge { display: inline-flex; align-items: center; gap: 5px; background: #f3f3f0; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #888; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const FLOW_NAME = "APAC";
+const FLOW_MANAGER = "Asif Ali";
+const FLOW_MANAGER_NOTION_ID = "c074f696-379f-44da-8708-7b0a9c66be77";
+const NOTION_DB_ID = "c23b4840-9449-4e88-bca5-74561bcdff69";
+const NOTION_PARENT_ID = "3758146861518091a3abf6a04ab68076";
+const RY_NOTION_ID = "U035N034ZJ6";
+const SESSION_LEADERS = ["Ryan", "Marcus Harmon", "Tara Glickman", "Rohit Chimata", "Chuck Collins", "Asif Ali", "Miranda Hirsch", "Camila Fonnegra", "Peers", "Recording"];
+const ALL_MANAGERS = [
+  { name: "Marcus Harmon", slackId: "U02Q7M2G6VC", checked: false },
+  { name: "Tara Glickman", slackId: "U04FD1YN4QY", checked: false },
+  { name: "Rohit Chimata", slackId: "U02DQDUS5FZ", checked: true },
+  { name: "Chuck Collins", slackId: "U049AMLDX2R", checked: false },
+  { name: "Asif Ali", slackId: "U03B7J4E6KZ", checked: true },
+  { name: "Miranda Hirsch", slackId: "U07DZ277PTJ", checked: false },
+  { name: "Camila Fonnegra", slackId: "U07BJE1GNJV", checked: false }
+];
+
+const CURRICULUM = {
+  "Week 1 - Day 1": { week: 1, day: 1, actionItem: null, sessions: [
+    { id: "w1d1_1", name: "Welcome with SDR Leadership Team", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d1_2", name: "Intro to Role and Expectations", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d1_3", name: "Notion Overview", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d1_4", name: "Hospitality Industry Overview", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d1_5", name: "Sales Tool Credential Check", duration: 15, defaultLeader: "Ryan" },
+    { id: "w1d1_6", name: "Brand Partnerships Overview", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d1_7", name: "Industry Overview: Personas", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d1_8", name: "SDR Team Values", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d1_9", name: "PMS/CRS Integrations", duration: 30, defaultLeader: "Recording" },
+  ], certifications: [] },
+  "Week 1 - Day 2": { week: 1, day: 2, actionItem: null, sessions: [
+    { id: "w1d2_1", name: "Current State - CRMs", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d2_2", name: "Secure Transactions", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d2_3", name: "AI Powered Sales and Catering Hub", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d2_4", name: "Product Walkthrough", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d2_5", name: "Script Block", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d2_6", name: "Call Review", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d2_7", name: "Booking the Meeting Talk Track", duration: 15, defaultLeader: "Ryan" },
+  ], certifications: [] },
+  "Week 1 - Day 3": { week: 1, day: 3, actionItem: "Assign accounts to this rep in Salesforce before they begin prospecting.", sessions: [
+    { id: "w1d3_1", name: "Current State - Door Locks", duration: null, defaultLeader: "Ryan" },
+    { id: "w1d3_2", name: "Arrivals Suite", duration: 60, defaultLeader: "Ryan" },
+    { id: "w1d3_3", name: "Departures Suite", duration: 30, defaultLeader: "Ryan" },
+    { id: "w1d3_4", name: "Product Walkthrough", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d3_5", name: "Script Block", duration: 45, defaultLeader: "Ryan" },
+  ], certifications: [
+    { id: "cert_w1d3_1", name: "Script Certification: Secure Transactions + AI Sales & Catering Hub", passScore: 80 }
+  ]},
+  "Week 1 - Day 4": { week: 1, day: 4, actionItem: null, sessions: [
+    { id: "w1d4_1", name: "Current State - POS, PBX", duration: null, defaultLeader: "Ryan" },
+    { id: "w1d4_2", name: "Omnichannel AI", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d4_3", name: "Guest Service Suite", duration: 60, defaultLeader: "Ryan" },
+    { id: "w1d4_4", name: "Product Walkthrough", duration: 45, defaultLeader: "Ryan" },
+    { id: "w1d4_5", name: "Script Block", duration: 45, defaultLeader: "Ryan" },
+  ], certifications: [
+    { id: "cert_w1d4_1", name: "Script Certification: Arrivals Suite + Departure Suite", passScore: 80 }
+  ]},
+  "Week 1 - Day 5": { week: 1, day: 5, actionItem: null, sessions: [
+    { id: "w1d5_1", name: "Objection Handling: The Canary Approach", duration: null, defaultLeader: "Ryan" },
+    { id: "w1d5_2", name: "Objection Handling: General Talk Tracks", duration: null, defaultLeader: "Ryan" },
+    { id: "w1d5_3", name: "HOTEL & GUEST Methodologies", duration: null, defaultLeader: "Ryan" },
+    { id: "w1d5_4", name: "Mock Calls w/ Objections", duration: null, defaultLeader: "Ryan" },
+    { id: "w1d5_5", name: "Sales Processes: Tool Walkthrough and Setup", duration: null, defaultLeader: "Ryan" },
+  ], certifications: [
+    { id: "cert_w1d5_1", name: "Script Certification: Omnichannel AI + Guest Service Suite", passScore: 80 }
+  ]},
+  "Week 2 - Day 1": { week: 2, day: 1, actionItem: null, sessions: [
+    { id: "w2d1_1", name: "Important Dashboards/Reports Overview", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d1_2", name: "Sales Processes: Salesloft Overview", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d1_3", name: "Sales Processes: Salesforce Overview", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d1_4", name: "Processes Practice", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d1_5", name: "Call Shadow", duration: null, defaultLeader: "Peers" },
+  ], certifications: [
+    { id: "cert_w2d1_1", name: "Certification: Objection Handling", passScore: 80 }
+  ]},
+  "Week 2 - Day 2": { week: 2, day: 2, actionItem: null, sessions: [
+    { id: "w2d2_1", name: "Prospecting Overview", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d2_2", name: "Prospecting Practice", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d2_3", name: "Peer Prospecting Block", duration: null, defaultLeader: "Peers" },
+    { id: "w2d2_4", name: "Call Shadow", duration: null, defaultLeader: "Peers" },
+  ], certifications: [
+    { id: "cert_w2d2_1", name: "Certification: SDR Processes", passScore: 80 }
+  ]},
+  "Week 2 - Day 3": { week: 2, day: 3, actionItem: null, sessions: [
+    { id: "w2d3_1", name: "Prospecting Session", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d3_2", name: "Email Best Practices", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d3_3", name: "Call Shadow", duration: null, defaultLeader: "Peers" },
+  ], certifications: [
+    { id: "cert_w2d3_1", name: "Certification: Prospecting", passScore: 80 }
+  ]},
+  "Week 2 - Day 4": { week: 2, day: 4, actionItem: null, sessions: [
+    { id: "w2d4_1", name: "Prospecting Session", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d4_2", name: "Call Shadow", duration: null, defaultLeader: "Peers" },
+  ], certifications: [
+    { id: "cert_w2d4_1", name: "Certification: Emailing", passScore: 80 }
+  ]},
+  "Week 2 - Day 5": { week: 2, day: 5, actionItem: null, sessions: [
+    { id: "w2d5_1", name: "Ridealong", duration: null, defaultLeader: "Ryan" },
+    { id: "w2d5_2", name: "Hold Rate Overview", duration: null, defaultLeader: "Ryan" },
+  ], certifications: [] },
+};
+
+const DAY_KEYS = Object.keys(CURRICULUM);
+
+function ScoreBar({ score, passScore }) {
+  const pct = Math.min(100, Math.max(0, Number(score) || 0));
+  const hasScore = score !== undefined && score !== "";
+  const pass = hasScore && Number(score) >= passScore;
+  const fail = hasScore && Number(score) < passScore;
+  const color = pass ? "#3B6D11" : fail ? "#A32D2D" : "#378ADD";
+  return <div className="score-bar-track"><div className="score-bar-fill" style={{ width: `${pct}%`, background: color }} /></div>;
+}
+
+function App() {
+  const [repName, setRepName] = useState("");
+  const [onboardingDate, setOnboardingDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedDay, setSelectedDay] = useState(DAY_KEYS[0]);
+  const [checked, setChecked] = useState({});
+  const [leaders, setLeaders] = useState({});
+  const [certScores, setCertScores] = useState({});
+  const [certNotes, setCertNotes] = useState({});
+  const [dayNotes, setDayNotes] = useState("");
+  const [managers, setManagers] = useState(ALL_MANAGERS.map(m => ({ ...m })));
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const dayData = CURRICULUM[selectedDay];
+  const completedCount = dayData.sessions.filter(s => checked[s.id]).length;
+  const totalCount = dayData.sessions.length;
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  function toggleCheck(id) { setChecked(prev => ({ ...prev, [id]: !prev[id] })); }
+  function setLeader(id, val) { setLeaders(prev => ({ ...prev, [id]: val })); }
+  function getLeader(s) { return leaders[s.id] !== undefined ? leaders[s.id] : s.defaultLeader; }
+  function toggleManager(idx) { setManagers(prev => prev.map((m, i) => i === idx ? { ...m, checked: !m.checked } : m)); }
+  function handleDayChange(day) {
+    setSelectedDay(day); setChecked({}); setLeaders({}); setCertScores({}); setCertNotes({}); setDayNotes("");
+  }
+
+  function buildSlackMessage(notionPageUrl) {
+    const certLines = dayData.certifications.map(c => {
+      const score = certScores[c.id];
+      const hasScore = score !== undefined && score !== "";
+      const pass = hasScore && Number(score) >= c.passScore;
+      return hasScore ? `${c.name}: ${score}/100 (${pass ? "Pass ✅" : "Fail ❌"})` : null;
+    }).filter(Boolean);
+    const tagged = managers.filter(m => m.checked && m.slackId).map(m => `<@${m.slackId}>`).join(" ");
+    const lines = [
+      `*${repName}* completed *${selectedDay}* of *${FLOW_NAME} Onboarding*`,
+      `📋 View recap: ${notionPageUrl || "_(creating...)_"}`,
+    ];
+    if (certLines.length > 0) lines.push(`📝 Cert scores: ${certLines.join(" · ")}`);
+    if (dayData.actionItem) lines.push(`⚠️ *Action required — ${FLOW_MANAGER}:* ${dayData.actionItem}`);
+    if (dayNotes) lines.push(`💬 Notes: ${dayNotes}`);
+    if (tagged) lines.push(`cc: ${tagged}`);
+    return lines.join("\n");
+  }
+
+  async function handleSubmit() {
+    if (!repName.trim()) { setStatus({ type: "error", msg: "Please enter the rep's name." }); return; }
+    setLoading(true);
+    setStatus({ type: "loading", msg: "Updating Notion and sending Slack..." });
+
+    const certSummary = dayData.certifications.map(c => {
+      const score = certScores[c.id]; const note = certNotes[c.id];
+      const hasScore = score !== undefined && score !== "";
+      const pass = hasScore && Number(score) >= c.passScore;
+      return `🏅 **${c.name}**: ${hasScore ? `${score}/100 — ${pass ? "PASS ✅" : "FAIL ❌"}` : "Not graded"}${note ? ` (Note: ${note})` : ""}`;
+    }).join("\n");
+
+    const sessionSummary = dayData.sessions.map(s =>
+      `${checked[s.id] ? "✅" : "⬜"} ${s.name} — Led by: ${getLeader(s)}${s.duration ? ` (${s.duration} min)` : ""}`
+    ).join("\n");
+
+    const dmIds = managers.filter(m => m.checked && m.slackId).map(m => m.slackId).join(", ");
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514", max_tokens: 2000,
+          system: `You manage SDR onboarding records in Notion and Slack. Execute these steps in order:
+
+STEP 1 — NOTION DATABASE ROW:
+Search database ID ${NOTION_DB_ID} for an existing page where "SDR Name" = the rep name.
+If not found, create a new page in that database with:
+  - "SDR Name": rep name (title field)
+  - "Onboarding date": date provided
+  - "Onboarded by": Notion user ID ${RY_NOTION_ID} (person field)
+  - "Manager": Notion user ID ${FLOW_MANAGER_NOTION_ID} (person field)
+The new page should be a child of parent page ${NOTION_PARENT_ID}.
+Return the URL of the rep's page.
+
+STEP 2 — NOTION RECAP:
+Append to that rep's page a new section:
+  - Heading: "${selectedDay} Recap — ${onboardingDate}"
+  - Sessions list with completion status and session leader
+  - Cert scores if any (bold with 🏅)
+  - Notes if any
+
+STEP 3 — SLACK CHANNEL:
+Find channel "sdr-onboarding" and post the Slack message provided.
+
+STEP 4 — SLACK DMs:
+Send the same Slack message as a DM to each Slack user ID listed.
+
+Return ONLY valid JSON: {"notion_page_url":"url or null","notion_ok":true,"slack_ok":true,"error":null}`,
+          messages: [{ role: "user", content: `Rep: ${repName}
+Flow: ${FLOW_NAME}
+Day: ${selectedDay}
+Date: ${onboardingDate}
+Sessions (${completedCount}/${totalCount} completed):
+${sessionSummary}
+${certSummary ? "Certifications:\n" + certSummary : ""}
+${dayNotes ? "Notes: " + dayNotes : ""}
+DM these Slack IDs: ${dmIds || "none"}
+Slack message: ${buildSlackMessage("[NOTION_PAGE_URL]")}` }],
+          mcp_servers: [
+            { type: "url", url: "https://mcp.notion.com/mcp", name: "notion-mcp" },
+            { type: "url", url: "https://mcp.slack.com/mcp", name: "slack-mcp" }
+          ]
+        })
+      });
+      const data = await res.json();
+      const txt = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+      let parsed = {};
+      try { parsed = JSON.parse(txt.replace(/```json|```/g, "").trim()); } catch(e) { parsed = { notion_ok: true, slack_ok: true }; }
+      const msgs = [];
+      if (parsed.notion_ok !== false) msgs.push("Notion updated ✓");
+      if (parsed.slack_ok !== false) msgs.push("Slack sent ✓");
+      if (parsed.error) msgs.push(`Note: ${parsed.error}`);
+      setStatus({ type: "success", msg: msgs.join("  ·  ") || "Done!" });
+    } catch(e) {
+      setStatus({ type: "error", msg: `Error: ${e.message}` });
+    }
+    setLoading(false);
+  }
+
+  const notifiedCount = managers.filter(m => m.checked).length;
+
+  return (
+    <div className="app">
+      <div className="flow-badge">APAC Onboarding</div>
+      <div className="page-title">Daily recap</div>
+      <div className="page-sub">Fill out at end of each onboarding day — syncs to Notion and Slack automatically.</div>
+
+      <div className="section-card">
+        <div className="section-header">Rep info</div>
+        <div className="field-row">
+          <span className="field-label">Rep name</span>
+          <input type="text" placeholder="First Last" value={repName} onChange={e=>setRepName(e.target.value)} style={{flex:1,height:34,border:"1px solid rgba(0,0,0,0.15)",borderRadius:8,padding:"0 10px",fontSize:13,background:"#fff",fontFamily:"inherit"}} />
+        </div>
+        <div className="field-row">
+          <span className="field-label">Date</span>
+          <input type="date" className="date-input" value={onboardingDate} onChange={e=>setOnboardingDate(e.target.value)} />
+        </div>
+        <div className="field-row">
+          <span className="field-label">Day</span>
+          <select className="day-select" value={selectedDay} onChange={e=>handleDayChange(e.target.value)}>
+            {DAY_KEYS.map(k=><option key={k} value={k}>{k}</option>)}
+          </select>
+          <span className={`day-badge ${dayData.week===1?"badge-w1":"badge-w2"}`}>Week {dayData.week}</span>
+        </div>
+        <div className="field-row" style={{marginBottom:0}}>
+          <span className="field-label" style={{fontSize:12}}>Notion</span>
+          <span className="notion-badge">APAC Onboarding · 37581468…</span>
+        </div>
+      </div>
+
+      {dayData.actionItem && (
+        <div className="action-banner">
+          <span>⚠️</span>
+          <span><strong>Manager action required:</strong> {dayData.actionItem}</span>
+        </div>
+      )}
+
+      <div className="section-card">
+        <div className="section-header">
+          <span>Sessions — {selectedDay}</span>
+          <span style={{fontWeight:400}}>{completedCount}/{totalCount}</span>
+        </div>
+        <div className="progress-bar-track"><div className="progress-bar-fill" style={{width:`${progress}%`}} /></div>
+        <div className="progress-label">{progress}% complete</div>
+        {dayData.sessions.map(s=>{
+          const leader = getLeader(s);
+          const isChanged = leaders[s.id] !== undefined && leaders[s.id] !== s.defaultLeader;
+          return (
+            <div key={s.id} className="session-item">
+              <div className={`check-box${checked[s.id]?" checked":""}`} onClick={()=>toggleCheck(s.id)}>
+                {checked[s.id] && <svg className="check-icon" viewBox="0 0 12 12"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>}
+              </div>
+              <div className="session-info">
+                <div className={`session-name${checked[s.id]?" done":""}`}>{s.name}</div>
+                {s.duration && <div className="session-meta">{s.duration} min</div>}
+              </div>
+              <select className={`leader-select${isChanged?" changed":""}`} value={leader} onChange={e=>setLeader(s.id,e.target.value)}>
+                {SESSION_LEADERS.map(l=><option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+          );
+        })}
+      </div>
+
+      {dayData.certifications.length > 0 && (
+        <div className="section-card">
+          <div className="section-header">Certifications</div>
+          {dayData.certifications.map(cert=>{
+            const score = certScores[cert.id];
+            const hasScore = score !== undefined && score !== "";
+            const pass = hasScore && Number(score) >= cert.passScore;
+            const fail = hasScore && Number(score) < cert.passScore;
+            return (
+              <div key={cert.id} style={{marginBottom:14}}>
+                <div style={{fontSize:13,fontWeight:500,marginBottom:8}}>{cert.name}</div>
+                <div className="cert-block">
+                  <div className="cert-row">
+                    <span className="cert-label">Score /100</span>
+                    <input className="score-input" type="number" min="0" max="100" placeholder="—" value={certScores[cert.id]||""} onChange={e=>setCertScores(p=>(({...p,[cert.id]:e.target.value})))} />
+                    <ScoreBar score={score} passScore={cert.passScore} />
+                    <span className={`pass-pill ${pass?"pass":fail?"fail":"neutral"}`}>{pass?"Pass ✓":fail?"Fail ✗":`Pass ≥ ${cert.passScore}`}</span>
+                  </div>
+                  <textarea className="cert-notes-ta" placeholder="Certification notes..." value={certNotes[cert.id]||""} onChange={e=>setCertNotes(p=>(({...p,[cert.id]:e.target.value})))} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="section-card">
+        <div className="section-header">Day notes</div>
+        <textarea className="notes-area" placeholder="Observations, standouts, areas to watch..." value={dayNotes} onChange={e=>setDayNotes(e.target.value)} />
+      </div>
+
+      <div className="section-card">
+        <div className="section-header">
+          <span>Notify managers</span>
+          <span style={{fontWeight:400}}>{notifiedCount} selected</span>
+        </div>
+        <p style={{fontSize:12,color:"#888",marginBottom:12}}>Checked managers get a DM and are tagged in #sdr-onboarding.</p>
+        {managers.map((m,i)=>(
+          <div key={i} className="manager-toggle" onClick={()=>toggleManager(i)}>
+            <div className={`mgr-check${m.checked?" on":""}`}>
+              {m.checked && <svg className="check-icon" viewBox="0 0 12 12"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>}
+            </div>
+            <span className="mgr-name">{m.name}</span>
+            <span className="mgr-hint">{m.slackId}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="section-card">
+        <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+          {loading?"Sending...":"Submit recap → Notion + Slack"}
+        </button>
+        {status && <div className={`status-msg status-${status.type}`}>{status.msg}</div>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
