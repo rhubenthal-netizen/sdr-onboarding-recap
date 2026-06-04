@@ -252,32 +252,34 @@ function App() {
         method: "POST", headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514", max_tokens: 2000,
-          system: `You manage SDR onboarding records in Notion and Slack. Execute these steps in order:
+          system: `You manage SDR onboarding records in Notion and Slack. Execute ALL of the following steps. Do not skip any step. Report exactly what happened.
 
 STEP 1 — NOTION DATABASE ROW:
-Search database ID ${NOTION_DB_ID} for an existing page where "SDR Name" = the rep name.
-If not found, create a new page in that database with:
-  - "SDR Name": rep name (title field)
-  - "Onboarding date": date provided
-  - "Onboarded by": Notion user ID ${RY_NOTION_ID} (person field)
-  - "Manager": Notion user ID ${FLOW_MANAGER_NOTION_ID} (person field)
-The new page should be a child of parent page ${NOTION_PARENT_ID}.
-Return the URL of the rep's page.
+Use the notion MCP to search database collection://c23b4840-9449-4e88-bca5-74561bcdff69 for a page where SDR Name matches the rep name provided.
+If not found, create a new database page under data source collection://c23b4840-9449-4e88-bca5-74561bcdff69 with these properties:
+  - "SDR Name": rep name (this is the title field)
+  - "date:Onboarding date:start": date in YYYY-MM-DD format
+  - "date:Onboarding date:is_datetime": 0
+  - "Onboarded by": the Notion user ID provided (person field — pass as plain UUID string)
+  - "Manager": the manager Notion user ID provided (person field — pass as plain UUID string)
+After creating or finding the page, return its URL.
 
 STEP 2 — NOTION RECAP:
-Append to that rep's page a new section:
-  - Heading: "${selectedDay} Recap — ${onboardingDate}"
-  - Sessions list with completion status and session leader
-  - Cert scores if any (bold with 🏅)
-  - Notes if any
+On that rep's Notion page, append new content blocks containing:
+  - A heading 2: "[Day] Recap — [Date]"
+  - A bulleted list of sessions with completion checkmarks and who led each
+  - Certification scores if any (bold, with 🏅 emoji)
+  - Day notes if provided
 
 STEP 3 — SLACK CHANNEL:
-Find channel "sdr-onboarding" and post the Slack message provided.
+Use the Slack MCP to find the channel named "sdr-onboarding" and post the exact Slack message provided. Do not skip this step.
 
 STEP 4 — SLACK DMs:
-Send the same Slack message as a DM to each Slack user ID listed.
+For each Slack user ID in the DM list, send them the exact same Slack message as a direct message. Do not skip this step.
 
-Return ONLY valid JSON: {"notion_page_url":"url or null","notion_ok":true,"slack_ok":true,"error":null}`,
+After completing all steps, return ONLY a valid JSON object with no markdown formatting:
+{"notion_page_url": "full url or null", "notion_ok": true or false, "slack_ok": true or false, "error": "describe any failures here or null"}
+If any step fails, set the relevant field to false and describe the error.`,
           messages: [{ role: "user", content: `Rep: ${repName}
 Flow: ${FLOW_NAME}
 Day: ${selectedDay}
