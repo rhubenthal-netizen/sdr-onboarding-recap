@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDR Onboarding Daily Recap</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f7f5; color: #111; min-height: 100vh; padding: 2rem 1rem; }
+  .app { max-width: 720px; margin: 0 auto; }
+  .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; color: #1C4482; }
+  .page-sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+  .section-card { background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .section-header { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+  .field-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .field-label { font-size: 13px; color: #666; min-width: 90px; }
+  select, input[type=text], input[type=number] { height: 34px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0 10px; font-size: 13px; background: #fff; color: #111; font-family: inherit; }
+  select { flex: 1; }
+  input[type=text] { flex: 1; }
+  .day-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; flex-shrink: 0; }
+  .badge-w1 { background: #E6F1FB; color: #0C447C; }
+  .badge-w2 { background: #EAF3DE; color: #27500A; }
+  .notion-badge { display: inline-flex; align-items: center; gap: 5px; background: #f3f3f0; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #888; }
+  .progress-bar-track { height: 4px; background: rgba(0,0,0,0.08); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: #1C4482; border-radius: 2px; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: #888; margin-bottom: 10px; }
+  .session-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .session-item:last-child { border-bottom: none; }
+  .check-box { width: 20px; height: 20px; border: 1.5px solid rgba(0,0,0,0.2); border-radius: 5px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all 0.15s; }
+  .check-box.checked { background: #1C4482; border-color: #1C4482; }
+  .check-icon { width: 11px; height: 11px; stroke: #fff; stroke-width: 2.5; fill: none; }
+  .session-name { font-size: 14px; font-weight: 500; transition: all 0.15s; }
+  .session-name.done { text-decoration: line-through; color: #aaa; }
+  .session-meta { font-size: 12px; color: #888; margin-top: 2px; }
+  .cert-block { background: #f7f7f5; border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+  .cert-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .cert-label { font-size: 12px; color: #666; min-width: 65px; }
+  .score-input { width: 72px; height: 30px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0 8px; font-size: 13px; background: #fff; }
+  .pass-pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+  .pass { background: #EAF3DE; color: #27500A; }
+  .fail { background: #FCEBEB; color: #791F1F; }
+  .neutral { background: #eee; color: #666; }
+  .score-bar-track { flex: 1; height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; overflow: hidden; min-width: 80px; }
+  .score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; }
+  .cert-notes-ta { width: 100%; height: 56px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 6px 10px; font-size: 12px; resize: vertical; background: #fff; font-family: inherit; margin-top: 6px; }
+  .notes-area { width: 100%; height: 80px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 8px 10px; font-size: 13px; resize: vertical; background: #fff; font-family: inherit; }
+  .manager-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .manager-row:last-child { border-bottom: none; }
+  .manager-name { font-size: 13px; font-weight: 500; min-width: 160px; color: #111; }
+  .manager-id-input { height: 28px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0 8px; font-size: 12px; background: #fff; flex: 1; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .id-badge { font-size: 11px; font-weight: 600; background: #E6F1FB; color: #0C447C; border-radius: 4px; padding: 2px 7px; flex-shrink: 0; }
+  .id-missing { font-size: 11px; color: #bbb; flex-shrink: 0; }
+  .remove-btn { background: none; border: none; cursor: pointer; color: #bbb; padding: 2px 4px; font-size: 16px; line-height: 1; }
+  .remove-btn:hover { color: #A32D2D; }
+  .add-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); }
+  .add-input { height: 30px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; padding: 0 8px; font-size: 12px; background: #fff; font-family: inherit; }
+  .add-btn { height: 30px; padding: 0 14px; background: transparent; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; font-size: 12px; cursor: pointer; font-family: inherit; }
+  .add-btn:hover { background: #f3f3f0; }
+  .submit-btn { width: 100%; height: 44px; background: #1C4482; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; transition: opacity 0.15s; }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status-msg { font-size: 13px; text-align: center; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: 500; }
+  .status-success { background: #EAF3DE; color: #27500A; }
+  .status-error { background: #FCEBEB; color: #791F1F; }
+  .status-loading { background: #E6F1FB; color: #0C447C; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const NOTION_PARENT_ID = "374814686151804287a6fec51d051090";
+
+const DEFAULT_MANAGERS = [
+  { name: "Marcus Harmon", slackId: "" },
+  { name: "Tara Glickman", slackId: "" },
+  { name: "Rohit Chimata", slackId: "" },
+  { name: "Chuck Collins", slackId: "" },
+  { name: "Asif Ali", slackId: "" },
+  { name: "Miranda Hirsch", slackId: "" },
+  { name: "Camila Fonnegra", slackId: "" },
+];
+
+const CURRICULUM = {
+  "Week 1 - Day 1": { week: 1, day: 1, sessions: [
+    { id: "w1d1_1", name: "Welcome with SDR Leadership Team", duration: 30, type: "Session with Ryan" },
+    { id: "w1d1_2", name: "Intro to Role and Expectations", duration: 30, type: "Session with Ryan" },
+    { id: "w1d1_3", name: "Notion Overview", duration: 30, type: "Session with Ryan" },
+    { id: "w1d1_4", name: "Hospitality Industry Overview", duration: 30, type: "Session with Ryan" },
+    { id: "w1d1_5", name: "Sales Tool Credential Check", duration: 15, type: "Session with Ryan" },
+    { id: "w1d1_6", name: "Brand Partnerships Overview", duration: 45, type: "Session with Ryan" },
+    { id: "w1d1_7", name: "Industry Overview: Personas", duration: 45, type: "Session with Ryan" },
+    { id: "w1d1_8", name: "SDR Team Values", duration: 30, type: "Session with Ryan" },
+    { id: "w1d1_9", name: "PMS/CRS Integrations", duration: 30, type: "Recording" },
+  ], certifications: [] },
+  "Week 1 - Day 2": { week: 1, day: 2, sessions: [
+    { id: "w1d2_1", name: "Current State - CRMs", duration: 30, type: "Session with Ryan" },
+    { id: "w1d2_2", name: "Secure Transactions", duration: 30, type: "Session with Ryan" },
+    { id: "w1d2_3", name: "AI Powered Sales and Catering Hub", duration: 30, type: "Session with Ryan" },
+    { id: "w1d2_4", name: "Product Walkthrough", duration: 30, type: "Session with Ryan" },
+    { id: "w1d2_5", name: "Script Block", duration: 45, type: "Session with Ryan" },
+    { id: "w1d2_6", name: "Call Review", duration: 45, type: "Session with Ryan" },
+    { id: "w1d2_7", name: "Booking the Meeting Talk Track", duration: 15, type: "Session with Ryan" },
+  ], certifications: [] },
+  "Week 1 - Day 3": { week: 1, day: 3, sessions: [
+    { id: "w1d3_1", name: "Current State - Door Locks", duration: null, type: "Session with Ryan" },
+    { id: "w1d3_2", name: "Arrivals Suite", duration: 60, type: "Session with Ryan" },
+    { id: "w1d3_3", name: "Departures Suite", duration: 30, type: "Session with Ryan" },
+    { id: "w1d3_4", name: "Product Walkthrough", duration: 45, type: "Session with Ryan" },
+    { id: "w1d3_5", name: "Script Block", duration: 45, type: "Session with Ryan" },
+  ], certifications: [
+    { id: "cert_w1d3_1", name: "Script Certification: Secure Transactions + AI Sales & Catering Hub", passScore: 80 }
+  ]},
+  "Week 1 - Day 4": { week: 1, day: 4, sessions: [
+    { id: "w1d4_1", name: "Current State - POS, PBX", duration: null, type: "Session with Ryan" },
+    { id: "w1d4_2", name: "Omnichannel AI", duration: 45, type: "Session with Ryan" },
+    { id: "w1d4_3", name: "Guest Service Suite", duration: 60, type: "Session with Ryan" },
+    { id: "w1d4_4", name: "Product Walkthrough", duration: 45, type: "Session with Ryan" },
+    { id: "w1d4_5", name: "Script Block", duration: 45, type: "Session with Ryan" },
+  ], certifications: [
+    { id: "cert_w1d4_1", name: "Script Certification: Arrivals Suite + Departure Suite", passScore: 80 }
+  ]},
+  "Week 1 - Day 5": { week: 1, day: 5, sessions: [
+    { id: "w1d5_1", name: "Objection Handling: The Canary Approach", duration: null, type: "Session with Ryan" },
+    { id: "w1d5_2", name: "Objection Handling: General Talk Tracks", duration: null, type: "Session with Ryan" },
+    { id: "w1d5_3", name: "HOTEL & GUEST Methodologies", duration: null, type: "Session with Ryan" },
+    { id: "w1d5_4", name: "Mock Calls w/ Objections", duration: null, type: "Session with Ryan" },
+    { id: "w1d5_5", name: "Sales Processes: Tool Walkthrough and Setup", duration: null, type: "Session with Ryan" },
+  ], certifications: [
+    { id: "cert_w1d5_1", name: "Script Certification: Omnichannel AI + Guest Service Suite", passScore: 80 }
+  ]},
+  "Week 2 - Day 1": { week: 2, day: 1, sessions: [
+    { id: "w2d1_1", name: "Important Dashboards/Reports Overview", duration: null, type: "Session with Ryan" },
+    { id: "w2d1_2", name: "Sales Processes: Salesloft Overview", duration: null, type: "Session with Ryan" },
+    { id: "w2d1_3", name: "Sales Processes: Salesforce Overview", duration: null, type: "Session with Ryan" },
+    { id: "w2d1_4", name: "Processes Practice", duration: null, type: "Session with Ryan" },
+    { id: "w2d1_5", name: "Call Shadow", duration: null, type: "Session with Peers" },
+  ], certifications: [
+    { id: "cert_w2d1_1", name: "Certification: Objection Handling", passScore: 80 }
+  ]},
+  "Week 2 - Day 2": { week: 2, day: 2, sessions: [
+    { id: "w2d2_1", name: "Prospecting Overview", duration: null, type: "Session with Ryan" },
+    { id: "w2d2_2", name: "Prospecting Practice", duration: null, type: "Session with Ryan" },
+    { id: "w2d2_3", name: "Peer Prospecting Block", duration: null, type: "Session with Peers" },
+    { id: "w2d2_4", name: "Call Shadow", duration: null, type: "Session with Peers" },
+  ], certifications: [
+    { id: "cert_w2d2_1", name: "Certification: SDR Processes", passScore: 80 }
+  ]},
+  "Week 2 - Day 3": { week: 2, day: 3, sessions: [
+    { id: "w2d3_1", name: "Prospecting Session", duration: null, type: "Session with Ryan" },
+    { id: "w2d3_2", name: "Email Best Practices", duration: null, type: "Session with Ryan" },
+    { id: "w2d3_3", name: "Call Shadow", duration: null, type: "Session with Peers" },
+  ], certifications: [
+    { id: "cert_w2d3_1", name: "Certification: Prospecting", passScore: 80 }
+  ]},
+  "Week 2 - Day 4": { week: 2, day: 4, sessions: [
+    { id: "w2d4_1", name: "Prospecting Session", duration: null, type: "Session with Ryan" },
+    { id: "w2d4_2", name: "Call Shadow", duration: null, type: "Session with Peers" },
+  ], certifications: [
+    { id: "cert_w2d4_1", name: "Certification: Emailing", passScore: 80 }
+  ]},
+  "Week 2 - Day 5": { week: 2, day: 5, sessions: [
+    { id: "w2d5_1", name: "Ridealong", duration: null, type: "Session with Ryan" },
+    { id: "w2d5_2", name: "Hold Rate Overview", duration: null, type: "Session with Ryan" },
+  ], certifications: [] },
+};
+
+const DAY_KEYS = Object.keys(CURRICULUM);
+
+function ScoreBar({ score, passScore }) {
+  const pct = Math.min(100, Math.max(0, Number(score) || 0));
+  const hasScore = score !== undefined && score !== "";
+  const pass = hasScore && Number(score) >= passScore;
+  const fail = hasScore && Number(score) < passScore;
+  const color = pass ? "#3B6D11" : fail ? "#A32D2D" : "#378ADD";
+  return (
+    <div className="score-bar-track">
+      <div className="score-bar-fill" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  );
+}
+
+function App() {
+  const [repName, setRepName] = useState("");
+  const [selectedDay, setSelectedDay] = useState(DAY_KEYS[0]);
+  const [checked, setChecked] = useState({});
+  const [certScores, setCertScores] = useState({});
+  const [certNotes, setCertNotes] = useState({});
+  const [dayNotes, setDayNotes] = useState("");
+  const [managers, setManagers] = useState(DEFAULT_MANAGERS.map(m => ({ ...m })));
+  const [newManagerName, setNewManagerName] = useState("");
+  const [newManagerSlack, setNewManagerSlack] = useState("");
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const dayData = CURRICULUM[selectedDay];
+  const completedCount = dayData.sessions.filter(s => checked[s.id]).length;
+  const totalCount = dayData.sessions.length;
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  function toggleCheck(id) {
+    setChecked(prev => ({ ...prev, [id]: !prev[id] }));
+  }
+  function updateManagerId(idx, val) {
+    setManagers(prev => prev.map((m, i) => i === idx ? { ...m, slackId: val } : m));
+  }
+  function removeManager(idx) {
+    setManagers(prev => prev.filter((_, i) => i !== idx));
+  }
+  function addManager() {
+    if (!newManagerName.trim()) return;
+    setManagers(prev => [...prev, { name: newManagerName.trim(), slackId: newManagerSlack.trim() }]);
+    setNewManagerName(""); setNewManagerSlack("");
+  }
+
+  function buildSummaryText() {
+    const lines = [];
+    lines.push(`*SDR Onboarding Daily Recap — ${repName || "Rep"}*`);
+    lines.push(`*Day:* ${selectedDay}  |  *Sessions completed:* ${completedCount}/${totalCount}`);
+    lines.push("");
+    lines.push("*Sessions:*");
+    dayData.sessions.forEach(s => {
+      lines.push(`${checked[s.id] ? "✅" : "⬜"} ${s.name}${s.duration ? ` _(${s.duration} min)_` : ""}`);
+    });
+    if (dayData.certifications.length > 0) {
+      lines.push(""); lines.push("*Certifications:*");
+      dayData.certifications.forEach(c => {
+        const score = certScores[c.id];
+        const note = certNotes[c.id];
+        const pass = score !== undefined && score !== "" && Number(score) >= c.passScore;
+        const statusStr = score !== undefined && score !== "" ? `${score}/100 — ${pass ? "PASS ✅" : "FAIL ❌"}` : "Not graded";
+        lines.push(`• ${c.name}: ${statusStr}`);
+        if (note) lines.push(`  _Note: ${note}_`);
+      });
+    }
+    if (dayNotes) { lines.push(""); lines.push(`*Notes:* ${dayNotes}`); }
+    const managerMentions = managers.filter(m => m.slackId).map(m => `<@${m.slackId}>`).join(" ");
+    if (managerMentions) { lines.push(""); lines.push(`cc: ${managerMentions}`); }
+    return lines.join("\n");
+  }
+
+  async function handleSubmit() {
+    if (!repName.trim()) { setStatus({ type: "error", msg: "Please enter the rep's name." }); return; }
+    setLoading(true);
+    setStatus({ type: "loading", msg: "Sending to Notion and Slack..." });
+    const summaryText = buildSummaryText();
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: `You are an assistant that logs SDR onboarding recaps to Notion and Slack. Do the following in order:
+1. Search Notion for a page titled "Onboarding: [RepName]" that is a child of parent page ID ${NOTION_PARENT_ID}. If it doesn't exist, create it as a child of that parent.
+2. Append the day's recap as a new section (heading + bullet points) to that page.
+3. Find the Slack channel named "sdr-onboarding" and post the summary there.
+4. For each manager Slack user ID provided, send them a DM with the same summary.
+Return ONLY valid JSON (no markdown, no preamble): { "notion_ok": true/false, "slack_ok": true/false, "error": null or "string" }`,
+          messages: [{
+            role: "user",
+            content: `Rep name: ${repName}\nDay: ${selectedDay}\nNotion parent page ID: ${NOTION_PARENT_ID}\n\nRecap:\n${summaryText}\n\nManager Slack IDs to DM: ${managers.filter(m => m.slackId).map(m => m.slackId).join(", ") || "none"}`
+          }],
+          mcp_servers: [
+            { type: "url", url: "https://mcp.notion.com/mcp", name: "notion-mcp" },
+            { type: "url", url: "https://mcp.slack.com/mcp", name: "slack-mcp" }
+          ]
+        })
+      });
+      const data = await response.json();
+      const textBlocks = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+      let parsed = {};
+      try { parsed = JSON.parse(textBlocks.replace(/```json|```/g, "").trim()); } catch(e) { parsed = { notion_ok: true, slack_ok: true }; }
+      const msgs = [];
+      if (parsed.notion_ok !== false) msgs.push("Notion updated ✓");
+      if (parsed.slack_ok !== false) msgs.push("#sdr-onboarding posted ✓");
+      if (parsed.error) msgs.push(`Note: ${parsed.error}`);
+      setStatus({ type: "success", msg: msgs.join("  ·  ") || "Done!" });
+    } catch(e) {
+      setStatus({ type: "error", msg: `Error: ${e.message}` });
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div className="app">
+      <div className="page-title">SDR onboarding daily recap</div>
+      <div className="page-sub">Fill out at the end of each onboarding day — pushes to Notion and Slack automatically.</div>
+
+      <div className="section-card">
+        <div className="section-header">Rep info</div>
+        <div className="field-row">
+          <span className="field-label">Rep name</span>
+          <input type="text" placeholder="First Last" value={repName} onChange={e => setRepName(e.target.value)} />
+        </div>
+        <div className="field-row">
+          <span className="field-label">Day</span>
+          <select value={selectedDay} onChange={e => { setSelectedDay(e.target.value); setChecked({}); setCertScores({}); setCertNotes({}); setDayNotes(""); }}>
+            {DAY_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+          </select>
+          <span className={`day-badge ${dayData.week === 1 ? "badge-w1" : "badge-w2"}`}>Week {dayData.week}</span>
+        </div>
+        <div className="field-row" style={{ marginBottom: 0 }}>
+          <span className="field-label" style={{ fontSize: 12 }}>Notion target</span>
+          <span className="notion-badge">SDR Onboarding Recaps · {NOTION_PARENT_ID.slice(0, 8)}…</span>
+        </div>
+      </div>
+
+      <div className="section-card">
+        <div className="section-header" style={{ display: "flex", justifyContent: "space-between" }}>
+          <span>Sessions — {selectedDay}</span>
+          <span style={{ fontWeight: 400 }}>{completedCount}/{totalCount} completed</span>
+        </div>
+        <div className="progress-bar-track"><div className="progress-bar-fill" style={{ width: `${progress}%` }} /></div>
+        <div className="progress-label">{progress}% complete</div>
+        {dayData.sessions.map(session => (
+          <div key={session.id} className="session-item">
+            <div className={`check-box${checked[session.id] ? " checked" : ""}`} onClick={() => toggleCheck(session.id)}>
+              {checked[session.id] && (
+                <svg className="check-icon" viewBox="0 0 12 12"><polyline points="1.5,6 4.5,9 10.5,3" /></svg>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className={`session-name${checked[session.id] ? " done" : ""}`}>{session.name}</div>
+              <div className="session-meta">{session.type}{session.duration ? ` · ${session.duration} min` : ""}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {dayData.certifications.length > 0 && (
+        <div className="section-card">
+          <div className="section-header">Certifications</div>
+          {dayData.certifications.map(cert => {
+            const score = certScores[cert.id];
+            const hasScore = score !== undefined && score !== "";
+            const pass = hasScore && Number(score) >= cert.passScore;
+            const fail = hasScore && Number(score) < cert.passScore;
+            return (
+              <div key={cert.id} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 8 }}>{cert.name}</div>
+                <div className="cert-block">
+                  <div className="cert-row">
+                    <span className="cert-label">Score /100</span>
+                    <input className="score-input" type="number" min="0" max="100" placeholder="—" value={certScores[cert.id] || ""} onChange={e => setCertScores(prev => ({ ...prev, [cert.id]: e.target.value }))} />
+                    <ScoreBar score={score} passScore={cert.passScore} />
+                    <span className={`pass-pill ${pass ? "pass" : fail ? "fail" : "neutral"}`}>
+                      {pass ? "Pass ✓" : fail ? "Fail ✗" : `Pass ≥ ${cert.passScore}`}
+                    </span>
+                  </div>
+                  <textarea className="cert-notes-ta" placeholder="Certification notes (optional)..." value={certNotes[cert.id] || ""} onChange={e => setCertNotes(prev => ({ ...prev, [cert.id]: e.target.value }))} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="section-card">
+        <div className="section-header">Day notes</div>
+        <textarea className="notes-area" placeholder="Any observations, standouts, or areas to watch for this rep today..." value={dayNotes} onChange={e => setDayNotes(e.target.value)} />
+      </div>
+
+      <div className="section-card">
+        <div className="section-header">Managers to notify</div>
+        <p style={{ fontSize: 12, color: "#888", marginBottom: 12 }}>Managers with a Slack ID get a DM and are tagged in #sdr-onboarding. Find IDs in Slack: open profile → ⋯ → Copy member ID.</p>
+        {managers.map((m, i) => (
+          <div key={i} className="manager-row">
+            <div className="manager-name">{m.name}</div>
+            <input className="manager-id-input" type="text" placeholder="Slack user ID" value={m.slackId} onChange={e => updateManagerId(i, e.target.value)} />
+            {m.slackId ? <span className="id-badge">linked</span> : <span className="id-missing">no ID</span>}
+            <button className="remove-btn" onClick={() => removeManager(i)}>×</button>
+          </div>
+        ))}
+        <div className="add-row">
+          <input className="add-input" type="text" placeholder="Name" value={newManagerName} onChange={e => setNewManagerName(e.target.value)} style={{ width: 150 }} />
+          <input className="add-input" type="text" placeholder="Slack user ID" value={newManagerSlack} onChange={e => setNewManagerSlack(e.target.value)} style={{ width: 190, fontFamily: "monospace", fontSize: 12 }} />
+          <button className="add-btn" onClick={addManager}>+ Add</button>
+        </div>
+      </div>
+
+      <div className="section-card">
+        <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
+          {loading ? "Sending..." : "Send recap to Notion + Slack"}
+        </button>
+        {status && <div className={`status-msg status-${status.type}`}>{status.msg}</div>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
